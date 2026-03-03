@@ -31,6 +31,8 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
   List<Menu> findByCategoryId( Long categoryId);
 
+  List<Menu> findByCategoryName(String categoeyName);
+
   Page<Menu> findByCategoryNameAndPriceGreaterThanEqual(
       String categoryName,
       int minPrice,

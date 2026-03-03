@@ -3,6 +3,7 @@ package com.example.spring.controller;
 
 import com.example.spring.controller.dto.MenuResponse;
 import com.example.spring.service.MenuService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/menus")
+//@RequiredArgsConstructor
 public class MenuController {
 
   private final MenuService service;
@@ -99,6 +101,24 @@ public class MenuController {
       @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
   ) {
     return service.findMenusSliceByCategoryAndMinPrice(categoryName, minPrice, pageable);
+  }
+
+  @PostMapping("/tx/increase")
+  public void txIncrease(
+      @RequestParam String categoryName,
+      @RequestParam int delta
+  ) {
+    service.txIncrease(categoryName, delta);
+  }
+
+  @PostMapping("/tx/rollback")
+  public void txRollback(
+      @RequestParam String categoryName,
+      @RequestParam String newMenuName,
+      @RequestParam int newMenuPrice,
+      @RequestParam int delta
+  ) {
+    service.txCreateAndIncreaseWithRollback(categoryName, newMenuName, newMenuPrice, delta);
   }
 }
 
