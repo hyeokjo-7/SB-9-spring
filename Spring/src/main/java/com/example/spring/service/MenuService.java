@@ -1,12 +1,15 @@
 package com.example.spring.service;
 
 
+import static jakarta.transaction.Status.STATUS_COMMITTED;
+
 import com.example.spring.controller.dto.MenuResponse;
 import com.example.spring.domain.Category;
 import com.example.spring.domain.Menu;
 import com.example.spring.repository.CategoryRepository;
 import com.example.spring.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,18 +19,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+@Slf4j
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class MenuService {
 
   private final MenuRepository repository;
   private final CategoryRepository categoryRepository;
+  private final AuditService auditService;
 
-  public MenuService(MenuRepository repository, CategoryRepository categoryRepository) {
-    this.repository = repository;
-    this.categoryRepository = categoryRepository;
-  }
+//  public MenuService(MenuRepository repository, CategoryRepository categoryRepository,
+//      AuditService auditService) {
+//    this.repository = repository;
+//    this.categoryRepository = categoryRepository;
+//    this.auditService = auditService;
+//  }
 
   @Transactional(readOnly = true)
   public MenuResponse findById(Long id) {
@@ -147,5 +156,23 @@ public class MenuService {
 
     throw new RuntimeException("강제 예외(롤백 확인)");
   }
+
+  @Transactional
+  public void changePriceWithAuditAndFail(Long menuId, int newPrice) {
+    log.info("[Outer] tx active={}", TransactionSynchronizationManager.isActualTransactionActive());
+
+    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+      @Override public void afterCompletion(int status) {
+        log.info("[Outer] END = {}", status == STATUS_COMMITTED ? "COMMIT" : "ROLLBACK");
+      }
+    });
+
+    repository.updatePrice(menuId, newPrice);
+
+    auditService.writeAuditMenu(1L);
+
+    throw new RuntimeException("OUTER FAIL");
+  }
 }
+
 

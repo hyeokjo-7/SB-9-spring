@@ -8,6 +8,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -69,5 +70,9 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
       @Param("categoryName") String categoryName,
       Pageable pageable
   );
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query("update Menu m set m.price = :price where m.id = :id")
+  int updatePrice(@Param("id") Long id, @Param("price") int price);
 }
 

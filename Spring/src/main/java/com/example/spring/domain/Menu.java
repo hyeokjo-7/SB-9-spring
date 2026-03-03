@@ -35,6 +35,10 @@ public class Menu {
     this.category = category;
   }
 
+  public void changePrice(int price) {
+    this.price = price;
+  }
+
   // 연관관계 편의 메서드(선택)
   public void changeCategory(Category category) {
     this.category = category;

@@ -15,13 +15,22 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/menus")
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class MenuController {
 
   private final MenuService service;
 
-  public MenuController(MenuService service) {
-    this.service = service;
+//  public MenuController(MenuService service) {
+//    this.service = service;
+//  }
+
+  @PostMapping("/tx/propagation")
+  public String propagationTest(
+      @RequestParam Long menuId,
+      @RequestParam int newPrice
+  ) {
+    service.changePriceWithAuditAndFail(menuId, newPrice);
+    return "ok";
   }
 
   @GetMapping("/{id}")
